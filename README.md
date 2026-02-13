@@ -16,3 +16,6 @@ ____
 ├── books.json      # Файл хранения данных
 └── index.html      # HTML-страница (главная)
 ```
+## :eyes: Интерфейс приложения:
+<img width="1917" height="932" alt="изображение" src="https://github.com/user-attachments/assets/8c6970d0-e7b0-4c50-8fbf-01b96c92a5fc" />
+
