@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Library Pro</title>
+    <style>
+        /* Переменные для светлой темы */
+        :root {
+            --primary: #4a90e2;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --text-light: #95a5a6;
+            --border: #e1e8ed;
+        }
+
+        /* Переменные для темной темы */
+        body.dark-mode {
+            --bg: #1a1a2e;
+            --card-bg: #16213e;
+            --text: #e9ecef;
+            --text-light: #a2a8d3;
+            --border: #24345d;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .app-container { max-width: 600px; width: 100%; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 { margin: 0; font-weight: 700; font-size: 2rem; }
+
+        /* Кнопка переключения темы */
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; }
+
+        .progress-container {
+            background: var(--border);
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        #progressBar {
+            background: var(--success);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Форма */
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .form-group { display: grid; gap: 12px; }
+
+        input, select {
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: var(--card-bg);
+            color: var(--text);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Теги категорий */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Поиск и Сортировка */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Список */
+        .book-item {
+            background: var(--card-bg);
+            margin-bottom: 12px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            border: 1px solid transparent;
+        }
+
+        .book-item:hover { border-color: var(--primary); }
+
+        .book-info h3 { margin: 0; font-size: 1.1rem; }
+        .book-info p { margin: 4px 0 0; color: var(--text-light); font-size: 0.9rem; }
+
+        .book-actions { display: flex; gap: 8px; }
+        .btn-icon { border: none; background: none; cursor: pointer; font-size: 1.2rem; }
+        
+        .is-read { opacity: 0.6; }
+        .is-read h3 { text-decoration: line-through; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>Library 📚</h1>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙 Темная тема</button>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div id="totalBooks" class="stat-value">0</div>
+            <div class="stat-label">Всего</div>
+        </div>
+        <div class="stat-card">
+            <div id="readBooks" class="stat-value">0</div>
+            <div class="stat-label">Прочитано</div>
+        </div>
+    </div>
+    
+    <div class="progress-container">
+        <div id="progressBar"></div>
+    </div>
+
+    <div class="card">
+        <div class="form-group">
+            <input type="text" id="title" placeholder="Название книги">
+            <input type="text" id="author" placeholder="Автор">
+            <input type="text" id="category" placeholder="Категория">
+            <button class="btn-add" onclick="addBook()">Добавить в коллекцию</button>
+        </div>
+    </div>
+
+    <div class="tags-container" id="tagsList">
+        </div>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Поиск..." oninput="applyFilters()">
+        <select id="sortSelect" onchange="applyFilters()" style="width: auto;">
+            <option value="newest">Новые</option>
+            <option value="abc">А-Я</option>
+        </select>
+    </div>
+
+    <div id="booksList"></div>
+</div>
+
+<script>
+    const API_URL = '/books';
+    let allBooks = [];
+    let selectedCategory = null;
+
+    async function fetchBooks() {
+        try {
+            const response = await fetch(API_URL);
+            allBooks = await response.json();
+            renderTags();
+            updateStatistics();
+            applyFilters();
+        } catch (err) { console.error(err); }
+    }
+
+    // Переключение темы
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark-mode');
+        document.querySelector('.theme-toggle').innerText = isDark ? '☀️ Светлая тема' : '🌙 Темная тема';
+    }
+
+    // Генерация кнопок-категорий
+    function renderTags() {
+        const tagsList = document.getElementById('tagsList');
+        const categories = [...new Set(allBooks.map(b => b.category))];
+        
+        tagsList.innerHTML = `<div class="tag ${!selectedCategory ? 'active' : ''}" onclick="selectCategory(null)">Все</div>`;
+        
+        categories.forEach(cat => {
+            const tag = document.createElement('div');
+            tag.className = `tag ${selectedCategory === cat ? 'active' : ''}`;
+            tag.innerText = cat;
+            tag.onclick = () => selectCategory(cat);
+            tagsList.appendChild(tag);
+        });
+    }
+
+    function selectCategory(cat) {
+        selectedCategory = cat;
+        renderTags();
+        applyFilters();
+    }
+
+    function updateStatistics() {
+        const total = allBooks.length;
+        const read = allBooks.filter(b => b.isRead).length;
+        document.getElementById('totalBooks').innerText = total;
+        document.getElementById('readBooks').innerText = read;
+        document.getElementById('progressBar').style.width = (total > 0 ? (read / total) * 100 : 0) + '%';
+    }
+
+    function applyFilters() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const sortBy = document.getElementById('sortSelect').value;
+
+        let filtered = allBooks.filter(book => {
+            const matchesSearch = book.title.toLowerCase().includes(query) || book.author.toLowerCase().includes(query);
+            const matchesCategory = !selectedCategory || book.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        });
+
+        if (sortBy === 'abc') filtered.sort((a, b) => a.title.localeCompare(b.title));
+        else filtered.sort((a, b) => b.id - a.id);
+
+        renderBooks(filtered);
+    }
+
+    function renderBooks(books) {
+        const list = document.getElementById('booksList');
+        list.innerHTML = '';
+        books.forEach(book => {
+            const item = document.createElement('div');
+            item.className = `book-item ${book.isRead ? 'is-read' : ''}`;
+            item.innerHTML = `
+                <div class="book-info">
+                    <h3>${book.title}</h3>
+                    <p>${book.author} • ${book.category}</p>
+                </div>
+                <div class="book-actions">
+                    <button class="btn-icon" onclick="toggleRead(${book.id})">✔️</button>
+                    <button class="btn-icon" onclick="deleteBook(${book.id})">🗑️</button>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    // Остальные функции (addBook, toggleRead, deleteBook) остаются без изменений
+    async function addBook() {
+        const title = document.getElementById('title').value;
+        const author = document.getElementById('author').value;
+        const category = document.getElementById('category').value;
+        if (!title || !author || !category) return alert('Заполните поля!');
+
+        await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, author, category })
+        });
+        document.querySelectorAll('input').forEach(i => i.value = '');
+        fetchBooks();
+    }
+
+    async function toggleRead(id) {
+        await fetch(`${API_URL}/${id}`, { method: 'PUT' });
+        fetchBooks();
+    }
+
+    async function deleteBook(id) {
+        if (confirm('Удалить?')) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            fetchBooks();
+        }
+    }
+
+    fetchBooks();
+</script>
+</body>
+</html>
